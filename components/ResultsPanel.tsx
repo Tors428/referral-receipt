@@ -13,6 +13,7 @@
 import { Play, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ExtractionCard } from "@/components/ExtractionCard";
+import { EligibilityCard } from "@/components/EligibilityCard";
 import type { PipelineState } from "@/lib/use-pipeline";
 
 export function ResultsPanel({ state }: { state: PipelineState }) {
@@ -132,6 +133,7 @@ function CompleteView({
       </div>
 
       {/* Extraction */}
+      {/* Extraction */}
       {result.extracted && (
         <ExtractionCard
           extracted={result.extracted}
@@ -139,9 +141,14 @@ function CompleteView({
         />
       )}
 
-      {/* Placeholder for eligibility (8.5), outreach (8.6), audit trace (8.7) */}
+      {/* Eligibility */}
+      {result.eligibility && (
+        <EligibilityCard eligibility={result.eligibility} />
+      )}
+
+      {/* Placeholder for outreach (8.6), audit trace (8.7) */}
       <div className="bg-canvas border border-dashed border-border rounded-md p-3 text-[11px] font-mono text-muted text-center">
-        Eligibility · outreach · audit trace cards arrive in steps 8.5 – 8.7.
+        Outreach · audit trace cards arrive in steps 8.6 – 8.7.
       </div>
     </div>
   );

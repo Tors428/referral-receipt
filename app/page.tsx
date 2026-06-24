@@ -135,7 +135,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border bg-white">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between text-[11px] text-muted font-mono">
-         <span>Phase 8.4 — extraction display</span>
+         <span>Phase 8.5 — eligibility card</span>
           <span>No real patient data · synthetic fixtures only</span>
         </div>
       </footer>
