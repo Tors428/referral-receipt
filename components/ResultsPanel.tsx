@@ -14,8 +14,13 @@ import { Play, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { ExtractionCard } from "@/components/ExtractionCard";
 import { EligibilityCard } from "@/components/EligibilityCard";
+import { OutreachCard } from "@/components/OutreachCard";
+import { AuditTracePanel } from "@/components/AuditTracePanel";
 import type { PipelineState } from "@/lib/use-pipeline";
-
+function firstName(fullName: string | null | undefined): string | undefined {
+  if (!fullName) return undefined;
+  return fullName.trim().split(/\s+/)[0];
+}
 export function ResultsPanel({ state }: { state: PipelineState }) {
   if (state.status === "idle") return <IdleView />;
   if (state.status === "running") return <RunningView />;
@@ -89,22 +94,29 @@ function FailedView({
   state: Extract<PipelineState, { status: "failed" }>;
 }) {
   return (
-    <div className="bg-white border border-danger/30 rounded-lg shadow-clinical min-h-[420px] p-6">
-      <div className="flex items-center gap-2 mb-3">
-        <AlertTriangle className="w-4 h-4 text-danger" />
-        <h3 className="font-semibold text-sm text-ink">Pipeline failed</h3>
-        <Badge variant="danger" className="ml-auto">error</Badge>
-      </div>
-      <div className="bg-danger/5 border border-danger/20 rounded-md p-3 text-xs font-mono text-ink leading-relaxed">
-        {state.error}
+    <div className="flex flex-col gap-3">
+      {/* Error header */}
+      <div className="bg-white border border-danger/30 rounded-lg shadow-clinical p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <AlertTriangle className="w-4 h-4 text-danger" />
+          <h3 className="font-semibold text-sm text-ink">Pipeline failed</h3>
+          <Badge variant="danger" className="ml-auto">error</Badge>
+        </div>
+        <div className="bg-danger/5 border border-danger/20 rounded-md p-3 text-xs font-mono text-ink leading-relaxed">
+          {state.error}
+        </div>
+        {state.partialResult && (
+          <div className="mt-3 text-[11px] font-mono text-muted">
+            Partial trace captured: {state.partialResult.trace.steps.length} step
+            {state.partialResult.trace.steps.length === 1 ? "" : "s"} before
+            failure. Inspect below.
+          </div>
+        )}
       </div>
 
+      {/* Partial audit trace, if any */}
       {state.partialResult && (
-        <div className="mt-4 text-[11px] font-mono text-muted">
-          Partial trace: {state.partialResult.trace.steps.length} step
-          {state.partialResult.trace.steps.length === 1 ? "" : "s"} completed
-          before failure.
-        </div>
+        <AuditTracePanel trace={state.partialResult.trace} />
       )}
     </div>
   );
@@ -141,15 +153,21 @@ function CompleteView({
         />
       )}
 
-      {/* Eligibility */}
+     {/* Eligibility */}
       {result.eligibility && (
         <EligibilityCard eligibility={result.eligibility} />
       )}
 
-      {/* Placeholder for outreach (8.6), audit trace (8.7) */}
-      <div className="bg-canvas border border-dashed border-border rounded-md p-3 text-[11px] font-mono text-muted text-center">
-        Outreach · audit trace cards arrive in steps 8.6 – 8.7.
-      </div>
+      {/* Outreach draft */}
+      {result.draft && (
+        <OutreachCard
+          draft={result.draft}
+          patientFirstName={firstName(result.extracted?.patient.fullName.value)}
+        />
+      )}
+
+      {/* Audit trace */}
+      <AuditTracePanel trace={result.trace} />
     </div>
   );
 }

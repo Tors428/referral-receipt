@@ -2,22 +2,39 @@
  * POST /api/run
  *
  * Body: { rawText: string, sourceFixtureId?: string }
- * Returns: RunOutput from the orchestrator — extracted, eligibility,
- *          draft, audit trace, review flags, status.
+ * Returns: RunOutput from the orchestrator.
  *
- * This is the single endpoint the UI will call. The individual stage
- * endpoints (/api/extract, /api/payer/eligibility, /api/draft-outreach)
- * remain available for debugging and for developers who want to wire
- * the pipeline differently.
+ * Rate-limited to protect the demo quota. See lib/agent/rate-limit.ts.
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { runPipeline } from "@/lib/agent/orchestrator";
+import { checkRateLimit, getClientIp } from "@/lib/agent/rate-limit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
+  // ---- Rate limit ----
+  const ip = getClientIp(req);
+  const limit = checkRateLimit(ip);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      {
+        error: limit.message,
+        rateLimited: true,
+        reason: limit.reason,
+      },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(limit.retryAfterSec),
+        },
+      }
+    );
+  }
+
+  // ---- Parse body ----
   let body: { rawText?: string; sourceFixtureId?: string };
   try {
     body = await req.json();
@@ -42,6 +59,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // ---- Run pipeline ----
   try {
     const result = await runPipeline({
       rawText: body.rawText,
@@ -49,7 +67,8 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(result);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown orchestrator error";
+    const message =
+      err instanceof Error ? err.message : "Unknown orchestrator error";
     console.error("[/api/run] error:", message);
     return NextResponse.json({ error: message }, { status: 500 });
   }
