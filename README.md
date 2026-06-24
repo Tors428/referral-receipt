@@ -4,7 +4,9 @@
 
 PHI-safe by design. No real patient data. Synthetic fixtures only.
 
-🔗 **Live demo:** *(deploy URL goes here in Phase 10)*
+🔗 **Live demo:** (https://referral-receipt.vercel.app)
+<img width="800" height="419" alt="referral-receipt" src="https://github.com/user-attachments/assets/17e3fae6-35e8-4dca-b550-6d358286d733" />
+
 
 ---
 
