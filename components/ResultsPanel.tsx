@@ -12,6 +12,7 @@
 
 import { Play, Loader2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { ExtractionCard } from "@/components/ExtractionCard";
 import type { PipelineState } from "@/lib/use-pipeline";
 
 export function ResultsPanel({ state }: { state: PipelineState }) {
@@ -115,72 +116,35 @@ function CompleteView({
   state: Extract<PipelineState, { status: "complete" }>;
 }) {
   const { result, durationMs } = state;
-  const patient = result.extracted?.patient.fullName.value ?? "?";
-  const specialty = result.extracted?.serviceRequest.specialty.value ?? "?";
-  const priority = result.extracted?.serviceRequest.priority.value ?? "?";
-  const inNetwork = result.eligibility?.isInNetwork;
-  const priorAuth = result.eligibility?.priorAuthRequired;
-  const draftChannel = result.draft?.channel ?? "?";
-  const draftTone = result.draft?.tone ?? "?";
 
   return (
-    <div className="bg-white border border-border rounded-lg shadow-clinical min-h-[420px] p-6">
-      <div className="flex items-center gap-2 mb-5">
+    <div className="flex flex-col gap-3">
+      {/* Status header — sits above the cards */}
+      <div className="bg-white border border-border rounded-lg shadow-clinical px-4 py-3 flex items-center gap-2">
         <CheckCircle2 className="w-4 h-4 text-success" />
         <h3 className="font-semibold text-sm text-ink">Pipeline complete</h3>
         <Badge variant="success" className="ml-auto">
           {durationMs.toLocaleString()} ms
         </Badge>
+        <Badge variant="neutral">
+          {result.trace.steps.length} step{result.trace.steps.length === 1 ? "" : "s"}
+        </Badge>
       </div>
 
-      {/* Temporary minimal summary — replaced by real cards in 8.4–8.7 */}
-      <div className="space-y-4 text-sm">
-        <SummaryRow label="Patient" value={patient} />
-        <SummaryRow label="Specialty" value={specialty} />
-        <SummaryRow label="Priority" value={priority} mono />
-        <SummaryRow
-          label="In network"
-          value={inNetwork === undefined ? "?" : inNetwork ? "yes" : "no"}
-          mono
+      {/* Extraction */}
+      {result.extracted && (
+        <ExtractionCard
+          extracted={result.extracted}
+          reviewFlags={result.reviewFlags}
         />
-        <SummaryRow
-          label="Prior auth"
-          value={priorAuth === undefined ? "?" : priorAuth ? "required" : "not required"}
-          mono
-        />
-        <SummaryRow label="Outreach" value={`${draftChannel} · ${draftTone}`} mono />
-        <SummaryRow label="Audit steps" value={String(result.trace.steps.length)} mono />
-        <SummaryRow
-          label="Review flags"
-          value={String(result.reviewFlags.length)}
-          mono
-        />
-      </div>
+      )}
 
-      <p className="text-[11px] font-mono text-muted mt-6">
-        Phase 8.3 summary view. Full per-section cards arrive in 8.4–8.7.
-      </p>
+      {/* Placeholder for eligibility (8.5), outreach (8.6), audit trace (8.7) */}
+      <div className="bg-canvas border border-dashed border-border rounded-md p-3 text-[11px] font-mono text-muted text-center">
+        Eligibility · outreach · audit trace cards arrive in steps 8.5 – 8.7.
+      </div>
     </div>
   );
 }
 
-function SummaryRow({
-  label,
-  value,
-  mono = false,
-}: {
-  label: string;
-  value: string;
-  mono?: boolean;
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3 border-b border-border pb-2 last:border-0">
-      <span className="text-xs font-mono text-muted">{label}</span>
-      <span
-        className={`text-sm text-ink ${mono ? "font-mono" : ""}`}
-      >
-        {value}
-      </span>
-    </div>
-  );
-}
+

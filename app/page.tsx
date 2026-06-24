@@ -126,7 +126,8 @@ export default function Home() {
 
         
         {/* RIGHT: results panel */}
-        <div className="flex flex-col gap-4">
+        {/* RIGHT: results panel */}
+        <div className="flex flex-col gap-4 lg:max-h-[calc(100vh-160px)] lg:overflow-y-auto pr-1">
           <ResultsPanel state={state} />
         </div>
       </section>
@@ -134,7 +135,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border bg-white">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between text-[11px] text-muted font-mono">
-         <span>Phase 8.3 — pipeline wired</span>
+         <span>Phase 8.4 — extraction display</span>
           <span>No real patient data · synthetic fixtures only</span>
         </div>
       </footer>
